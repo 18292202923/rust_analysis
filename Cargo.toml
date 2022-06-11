@@ -1,0 +1,30 @@
+[package]
+name = "rust_analysis"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+#solana-sdk = "1.10.0"
+#solana-client = "1.10.0"
+solana-sdk = "1.9.28"
+#solana-program = "1.9.28"
+solana-client = "1.9.28"
+solana-program = "1.9.8"
+
+serde_json = "1.0.79"
+borsh = "0.9.3"
+solana-transaction-status = "1.5.19"
+chrono = "0.4.19"
+regex = "1"
+sha2 = "0.10.2"
+#sha2 = { version = "0.10.2", default-features = false }
+hex = "0.4.3"
+base64 = "0.13.0"
+bs58 = "0.4.0"
+#solana-account-decoder = "1.10.23"
+solana-account-decoder = "1.9.28"
+mpl-candy-machine =  { version = "4.0.0", features = ["no-entrypoint"] }
+anchor-syn = "0.24.2"
+anchor-lang = "0.24.2"

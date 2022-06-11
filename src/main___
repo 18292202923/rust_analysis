@@ -1,0 +1,280 @@
+
+
+use chrono::NaiveDateTime;
+use core::time;
+use std::thread;
+use solana_client::rpc_client::RpcClient;
+use solana_sdk::signer::Signer;
+use solana_sdk::signature::read_keypair_file;
+use solana_sdk::signature::write_keypair_file;
+use solana_client::rpc_request::TokenAccountsFilter;
+use solana_transaction_status::UiTransactionEncoding;
+use regex::Regex;
+use solana_transaction_status::{EncodedTransaction,UiTransaction,UiMessage};
+use solana_transaction_status::parse_accounts::ParsedAccount;
+use std::cmp;
+use std::str::FromStr;
+
+
+const URL: &str = "https://api.devnet.solana.com";
+
+
+//const URL: &str = "https://api.devnet.solana.com";
+//const URL: &str = "https://api.testnet.solana.com";
+use base64::{encode, decode};
+use solana_account_decoder::{UiAccountEncoding, UiDataSliceConfig};
+use solana_client::rpc_config::{RpcAccountInfoConfig, RpcProgramAccountsConfig};
+use solana_client::rpc_filter::{Memcmp, MemcmpEncodedBytes, RpcFilterType};
+use solana_sdk::commitment_config::CommitmentConfig;
+use solana_sdk::pubkey::Pubkey;
+
+use sha2::{Sha256, Sha512, Digest};
+
+
+fn main() {
+    println!("Hello, world!");
+
+
+// create a Sha256 object
+    let mut hasher = Sha256::new();
+
+// write input message
+    hasher.update(b"account:CandyMachine");
+
+// read hash digest and consume hasher
+    let result = hasher.finalize();
+
+
+    let rpc_client = RpcClient::new(URL);
+    let input = "account:CandyMachine";
+    let base64_bytes_val =encode(&result.as_slice()[0..8]);
+
+    println!("{:?} ---{:?}",base64_bytes_val,MemcmpEncodedBytes::Base64(base64_bytes_val.to_string()))
+
+
+    
+
+
+
+
+
+    
+}
+
+
+ fn mai__n() {
+     println!("Hello, world!");
+
+
+// create a Sha256 object
+     let mut hasher = Sha256::new();
+
+// write input message
+     hasher.update(b"account:CandyMachine");
+
+// read hash digest and consume hasher
+     let result = hasher.finalize();
+
+
+     let rpc_client = RpcClient::new(URL);
+     let input = "account:CandyMachine";
+     let base64_bytes_val =encode(&result.as_slice()[0..8]);
+
+/*    let input = b"account:CandyMachine";
+    let base64_bytes_val = digest_bytes(input).as_slice().try_into()[0..8];
+*/
+
+    let a = b"hello world";
+    let b = "aGVsbG8gd29ybGQ=";
+
+/*    assert_eq!(encode(a), b);
+    assert_eq!(a, &decode(b).unwrap()[..]);
+
+*/
+
+    let memcmp = RpcFilterType::Memcmp(Memcmp {
+        offset: 0,
+        bytes: MemcmpEncodedBytes::Base64(base64_bytes_val.to_string()),
+        encoding: None,
+    });
+    let config = RpcProgramAccountsConfig {
+        filters: Some(vec![
+         //   RpcFilterType::DataSize(128),
+            memcmp,
+        ]),
+        account_config: RpcAccountInfoConfig {
+            encoding: Some(UiAccountEncoding::Base64),
+            data_slice: Some(UiDataSliceConfig {
+                offset: 0,
+                length: 0,
+            }),
+            commitment: Some(CommitmentConfig::processed()),
+           min_context_slot: Some(1234),
+        },
+        with_context: Some(false),
+    };
+
+
+
+    let candyMachineV2Program = Pubkey::from_str("cndy3Z4yapfJBmL3ShUp5exZKqR3z33thTzeNMm2gRZ").unwrap();
+
+
+    let accounts = rpc_client.get_program_accounts_with_config(
+        &candyMachineV2Program,
+        config,
+    ).unwrap();
+
+    println!("有多少个：{:?}",accounts.len())
+}
+
+
+/*
+fn main_() {
+    let mut _client = RpcClient::new(URL);
+
+    //let mut _client = get_client();
+    let mut epoch_start = _client.get_epoch_info().unwrap();
+    let _period = time::Duration::from_millis(5000);
+    thread::sleep(_period);
+    let mut epoch_end = _client.get_epoch_info().unwrap();
+    let mut end_slot = epoch_end.absolute_slot;
+    let mut start_slot = epoch_start.absolute_slot;
+    while end_slot > start_slot {
+        let blocks = _client.get_blocks(start_slot, Some(end_slot)).unwrap();
+        for s in blocks {
+            let _blk = _client.get_block(s);
+            let blk = match _blk {
+                Ok(b) =>b,
+                Err(_) => continue,
+            };
+            let dt = NaiveDateTime::from_timestamp(blk.block_time.unwrap(),0);
+            println!("block time: {:?} 这个block 有{} 个交易",dt,blk.transactions.len());
+
+            for (i,tn) in blk.transactions.into_iter().enumerate() {
+                println!("第{:?}个交易  ",i);
+                //let tn = &tn_e;
+                //println!("------------------------------------------");
+                let _meta = tn.meta.unwrap();
+                //println!("_meta_meta_meta_meta 原始数据 {:?} ",_meta);
+
+                let msg = _meta.log_messages.unwrap();
+                if show_transfer(&msg) {
+                    println!("{:?},{:?},{:?}",_meta.pre_balances,_meta.post_balances,_meta.status);
+                    println!("{:?},{:?},{:?}",_meta.pre_balances.len(),_meta.post_balances.len(),_meta.status);
+                    let _tnx = tn.transaction;
+                    //println!("原始数据 {:?} ",_tnx);
+
+                    let ac = get_tnx_data(_tnx);
+                    //println!("{:?} of size {:?}",ac,ac.len());
+
+                    let delta = get_balance_delta(&_meta.pre_balances,&_meta.post_balances,&ac,&dt);
+                    println!("{:?} of size {:?}",delta, delta.len());
+                    println!("{:?} of size {:?}",ac,ac.len());
+                }
+            }
+            // println!("_blk_blk_blk_blk {:?}", _blk);
+        };
+        // get the data we need from each block
+        println!("--------------------------------------{:?}",epoch_end);
+        //get_trns(start_slot,end_slot);
+        end_slot = start_slot;
+        _client = RpcClient::new(URL);//get_client();
+        epoch_end = _client.get_epoch_info().unwrap();
+        end_slot = epoch_end.absolute_slot;
+    }
+
+
+}
+
+
+
+fn main____() {
+
+    let rpc_client = RpcClient::new(URL);
+
+    let input = b"account:CandyMachine";
+    let val = digest_bytes(input).as_slice().try_into()[0..8];
+
+    let  candyMachineDiscriminator =val;// Buffer.from(sha256.digest('account:CandyMachine')).slice(0, 8);
+
+
+    let sender = create_keypair();
+    let receiver = create_keypair();
+
+    let wallet = read_keypair_file("./my_create_receiver_keypair.json");
+    match wallet {
+        Ok(file) => file,
+        Err(error) =>    {
+            write_keypair_file(&receiver,"./my_create_receiver_keypair.json");
+            panic!("Problem creating the file: {:?}", error);
+
+        } ,
+    };
+
+
+
+    println!("Sender: {:?}", sender.pubkey());
+    println!("Receiver: {:?}", receiver.pubkey());
+
+    println!("Hello, world!");
+
+
+
+    /*    let my_account = Keypair::new();
+        let initialize_account_ix = instruction::initialize_account(
+            token_program,
+            &token_account.pubkey(),
+            &mint_account.pubkey(),
+            &my_account.pubkey(),
+        );*/
+
+
+
+
+
+
+
+
+
+
+    let program_bytes: Vec<u8> = serde_json::from_str("[44,100,110,15,223,210,85,212,211,139,175,160,156,130,145,141,70,81,37,15,204,43,94,210,71,141,254,82,139,167,121,31,229,1,178,186,113,0,2,53,247,238,44,152,68,169,182,167,29,183,91,45,172,209,24,63,4,235,20,227,151,190,156,160]").unwrap();
+
+
+    let program = Keypair::from_bytes(&program_bytes).unwrap();
+
+    let user_private_key:[u8;64] =[138,181,178,150,211,76,180,91,35,8,106,159,16,201,37,241,104,9,198,123,228,188,101,190,38,179,95,251,103,43,100,240,40,208,203,65,136,35,194,2,84,9,39,212,177,107,166,166,118,182,175,39,160,59,239,203,85,203,68,235,9,40,52,99];
+    //  [44,100,110,15,223,210,85,212,211,139,175,160,156,130,145,141,70,81,37,15,204,43,94,210,71,141,254,82,139,167,121,31,229,1,178,186,113,0,2,53,247,238,44,152,68,169,182,167,29,183,91,45,172,209,24,63,4,235,20,227,151,190,156,160];
+    let user_wallet_keypair = Keypair::from_bytes(&user_private_key).unwrap();
+    //let program = Keypair::from_bytes(&program_bytes).unwrap();
+    let program = user_wallet_keypair;
+
+    //  let program = Pubkey::from_str("3kKy3pRMuYTbEvezYSffxVKvcvpagf8gdajEqtFhgbLv").unwrap();
+
+    let accounts = rpc_client.get_program_accounts(&program.pubkey()).unwrap();
+    for (i, x) in accounts.iter().enumerate() {
+        let mut greeting_account = GreetingSchema::try_from_slice(&(x.1.data)).unwrap();
+
+        //let encoded = GreetingSchema { counter: 0 }.try_to_vec().unwrap();
+        println!("我得到了一个 {:?}", greeting_account.counter);
+
+        println!("In position {} we have value {:?} {} {:?}", i, x.0,x.1.owner,x.1.data);
+    }
+
+
+
+
+    let payer = read_keypair_file(&*shellexpand::tilde("~/.config/solana/id.json"))
+        .expect("Example requires a keypair file");
+    println!("frombyte_testKey private key= {:?}", payer.pubkey());
+    //  say_hello(&payer, &program, &rpc_client);
+    //create_greeting_account(&payer, &program, &rpc_client);
+    say_hello_message(&payer, &program, &rpc_client);
+
+    let greeting_pubkey = Pubkey::create_with_seed(
+        &payer.pubkey(),
+        "get_greeting_seed()_11",
+        &program.pubkey(),
+    ).unwrap();
+    // let greeting_pubkey = get_greeting_public_key(&payer.pubkey(), &program.pubkey());
+    let greeting_account = rpc_client.get_account(&greeting_pubkey).unwrap();
+    let decoded = GreetingSchema::try_from_slice(&greeting_account.data).unwrap(
